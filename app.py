@@ -192,4 +192,44 @@ with tab4:
         
         if record_id in st.session_state.records:
             current_data = st.session_state.records[record_id]
-            st.markdown(f"**กำลังแก้ไข ID:** {record_id
+            st.markdown(f"**กำลังแก้ไข ID:** {record_id}")
+            with st.form("edit_form"):
+                new_date = st.date_input("วันที่", current_data['Date'])
+                type_index = 0 if current_data['Type'] == 'รายรับ' else 1
+                new_type = st.selectbox("ประเภท", ["รายรับ", "รายจ่าย"], index=type_index)
+                new_desc = st.text_input("รายละเอียดรายการ", current_data['Description'])
+                new_amount = st.number_input("จำนวนเงิน (บาท)", min_value=0.0, value=float(current_data['Amount']), step=10.0)
+                submitted = st.form_submit_button("อัปเดตข้อมูล")
+                if submitted:
+                    st.session_state.records[record_id] = {'Date': new_date, 'Type': new_type, 'Description': new_desc, 'Amount': new_amount}
+                    save_data(st.session_state.records)
+                    st.success("✅ อัปเดตข้อมูลเรียบร้อยแล้ว!")
+        else:
+            if record_id > 0:
+                st.error(f"❌ ไม่พบ ID {record_id} ในระบบ")
+
+# --- แท็บ 5: ลบข้อมูล ---
+with tab5:
+    st.header("ลบข้อมูล")
+    if not st.session_state.records:
+        st.info("📭 ยังไม่มีข้อมูลให้ลบ")
+    else:
+        df = get_dataframe(st.session_state.records)
+        st.dataframe(df, use_container_width=True, hide_index=True)
+        record_id = st.number_input("กรอก ID ที่ต้องการลบ", min_value=1, step=1)
+        
+        if st.button("ยืนยันการลบ", type="primary"):
+            if record_id in st.session_state.records:
+                del st.session_state.records[record_id]
+                new_records = {}
+                new_id = 1
+                for old_id in sorted(st.session_state.records.keys()):
+                    new_records[new_id] = st.session_state.records[old_id]
+                    new_id += 1
+                st.session_state.records = new_records
+                st.session_state.next_id = new_id
+                save_data(st.session_state.records)
+                st.success(f"✅ ลบข้อมูลและจัดเรียง ID ใหม่เรียบร้อยแล้ว!")
+                st.rerun() 
+            else:
+                st.error(f"❌ ไม่พบ ID {record_id} ในระบบ")
