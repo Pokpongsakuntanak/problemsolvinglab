@@ -241,13 +241,3 @@ Original file is located at
 #             else:
 #                 st.error(f"❌ ไม่พบ ID {record_id} ในระบบ")
 
-!ngrok authtoken 36Gu0RRYetdIkxoUvZ42X5Edz9g_22iE7fVAvErbRyPnLHB8o
-
-from pyngrok import ngrok
-
-ngrok.kill()  # ปิด tunnel เก่า
-
-public_url = ngrok.connect(8501)
-print("🌍 Open your app here:", public_url)
-
-!streamlit run app.py --server.port 8501 &
